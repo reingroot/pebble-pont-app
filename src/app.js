@@ -1,58 +1,77 @@
+var UI = require('ui');
+
 /**
- * Welcome to Pebble.js!
- *
- * This is where you write your app.
+ * Define the menus
  */
 
-var UI = require('ui');
-var Vector2 = require('vector2');
-
-var main = new UI.Card({
-  title: 'Pebble.js',
-  icon: 'images/menu_icon.png',
-  subtitle: 'Hello World!',
-  body: 'Press any button.'
-});
-
-main.show();
-
-main.on('click', 'up', function(e) {
-  var menu = new UI.Menu({
-    sections: [{
-      items: [{
-        title: 'Pebble.js',
-        icon: 'images/menu_icon.png',
-        subtitle: 'Can do Menus'
-      }, {
-        title: 'Second Item',
-        subtitle: 'Subtitle Text'
-      }]
+// Main menu with all departure stops
+var mainMenu = new UI.Menu({
+  sections: [{
+    title: 'Vertrek vanaf',
+    items: [{
+      title: 'Centraal Station'
+    }, {
+      title: 'Buiksloterweg'
+    }, {
+      title: 'NDSM-werf'
+    }, {
+      title: 'IJplein'
+    }, {
+      title: 'Tasmanstraat'
+    }, {
+      title: 'Distelweg'
+    }, {
+      title: 'Azartplein'
+    }, {
+      title: 'Zamenhofstraat'
     }]
-  });
-  menu.on('select', function(e) {
-    console.log('Selected item #' + e.itemIndex + ' of section #' + e.sectionIndex);
-    console.log('The item is titled "' + e.item.title + '"');
-  });
-  menu.show();
+  }]
 });
 
-main.on('click', 'select', function(e) {
-  var wind = new UI.Window();
-  var textfield = new UI.Text({
-    position: new Vector2(0, 50),
-    size: new Vector2(144, 30),
-    font: 'gothic-24-bold',
-    text: 'Text Anywhere!',
-    textAlign: 'center'
-  });
-  wind.add(textfield);
-  wind.show();
+// Central Station to ...
+var centralMenu = new UI.Menu({
+  sections: [{
+    title: 'Centraal Station naar',
+    items: [{
+      title: 'Buiksloterweg'
+    }, {
+      title: 'NDSM-werf'
+    }, {
+      title: 'IJplein'
+    }]
+  }]
 });
 
-main.on('click', 'down', function(e) {
-  var card = new UI.Card();
-  card.title('A Card');
-  card.subtitle('Is a Window');
-  card.body('The simplest window type in Pebble.js.');
-  card.show();
+// NDSM warf to ...
+var ndsmMenu = new UI.Menu({
+  sections: [{
+    title: 'NDSM-werf naar',
+    items: [{
+      title: 'Centraal Station'
+    }, {
+      title: 'Tasmanstraat'
+    }]
+  }]
+});
+
+mainMenu.show();
+
+mainMenu.on('select', function (e) {
+  console.log('Selected item #' + e.itemIndex + ' of section #' + e.sectionIndex);
+  console.log('The item is titled "' + e.item.title + '"');
+  
+  switch (e.item.title) {
+      
+    case 'Centraal Station':
+      centralMenu.show();
+      break;
+      
+    case 'NDSM-werf':
+      ndsmMenu.show();
+      break;
+  }
+});
+
+centralMenu.on('select', function (e) {
+  
 });
