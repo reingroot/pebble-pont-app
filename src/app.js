@@ -1,5 +1,6 @@
 var Vector2 = require('vector2');
 var UI = require('ui');
+var countdown = require('countdown');
 
 var route = {
   departure: '',
@@ -16,8 +17,8 @@ var singleRoutes = {
 };
 
 /**
- * Define the menus
- */
+ * Menus
+ ==============================================*/
 
 // Main menu with all departure stops
 var mainMenu = new UI.Menu({
@@ -50,11 +51,14 @@ var centralMenu = new UI.Menu({
   sections: [{
     title: 'Centraal Station naar',
     items: [{
-      title: 'Buiksloterweg'
+      title: 'Buiksloterweg',
+      subtitle: '> 5:30'
     }, {
-      title: 'NDSM-werf'
+      title: 'NDSM-werf',
+      subtitle: '> 4:23'
     }, {
-      title: 'IJplein'
+      title: 'IJplein',
+      subtitle: '> 2:40'
     }]
   }]
 });
@@ -73,10 +77,12 @@ var ndsmMenu = new UI.Menu({
 
 mainMenu.show();
 
+/**
+ * Action handlers
+ ==================================================*/
+
 // Main menu select handler
 mainMenu.on('select', function (e) {
-  console.log('Selected item #' + e.itemIndex + ' of section #' + e.sectionIndex);
-  console.log('The item is titled "' + e.item.title + '"');
   
   // Set the departure station
   route.departure = e.item.title;
@@ -122,50 +128,12 @@ function showTimes () {
   
   wind.show();
   
-  countdown(wind, 5, 30);
+  countdown(wind, 'currentDeparture', 5, 30);
+  
+  countdown(wind, 'nextDeparture', 5, 30);
 }
 
 // Get the departure times from the Pont App API
 function getTimes (departure) {
   
 }
-
-function countdown(wind, minutes, seconds )
-{
-  var endTime, hours, mins, msLeft, time, currentCount, el;
-
-  function twoDigits( n )
-  {
-    return (n <= 9 ? "0" + n : n);
-  }
-
-  function updateTimer()
-  {
-    msLeft = endTime - (+new Date());
-    if ( msLeft < 1000 ) {
-      //
-    } else {
-      time = new Date( msLeft );
-      hours = time.getUTCHours();
-      mins = time.getUTCMinutes();
-      currentCount = (hours ? hours + ':' + twoDigits( mins ) : mins) + ':' + twoDigits( time.getUTCSeconds() );
-      
-      // If this element exists remove it
-      if (el && el.index()) {
-        el.remove();
-      }
-      
-      el = new UI.Text({position: new Vector2(0, 100), size: new Vector2(144, 168), font: 'Bitham-30-Black', textAlign: 'center', text: currentCount});
-      
-      wind.add(el);
-      
-      setTimeout( updateTimer, time.getUTCMilliseconds() + 500 );
-    }
-  }
-
-  endTime = (+new Date()) + 1000 * (60*minutes + seconds) + 500;
-  updateTimer();
-}
-
-//countdown( "countdown", 1, 5 );
-//countdown( "countdown2", 100, 0 );
