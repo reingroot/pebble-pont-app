@@ -9,14 +9,14 @@ function countdown(wind, mode, minutes, seconds)
   switch (mode) {
     case 'currentDeparture':
       countdownConfig = {
-        font: 'Bitham-30-Black',
+        font: 'bitham-30-black',
         position: 60
       };
       break;
       
     case 'nextDeparture':
       countdownConfig = {
-        font: 'Bitham-10-Black',
+        font: 'gothic-24-bold',
         position: 100
       };
       break;
