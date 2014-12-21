@@ -1,12 +1,16 @@
 var Vector2 = require('vector2');
 var UI = require('ui');
+var gettimes = require('gettimes');
+var getTimeDifference = require('gettimedifference');
 var countdown = require('countdown');
 
+// Object to store the current route
 var route = {
   departure: '',
   arrival: ''
 };
 
+// Object of ferry departures that only have one destination
 var singleRoutes = {
   Buiksloterweg: 'Centraal Station',
   IJplein: 'Centraal Station',
@@ -52,13 +56,13 @@ var centralMenu = new UI.Menu({
     title: 'Centraal Station naar',
     items: [{
       title: 'Buiksloterweg',
-      subtitle: '> 5:30'
+      //subtitle: '> 5:30'
     }, {
       title: 'NDSM-werf',
-      subtitle: '> 4:23'
+      //subtitle: '> 4:23'
     }, {
       title: 'IJplein',
-      subtitle: '> 2:40'
+      //subtitle: '> 2:40'
     }]
   }]
 });
@@ -116,24 +120,28 @@ ndsmMenu.on('select', function (e) {
   showTimes();      
 });
 
-// Show the departure times for the chosen ferry stop
+/**
+ * @desc Show the departure times for the chosen ferry stop
+ */
 function showTimes () {
-  var title = route.departure + '\n' + route.arrival;
   
-  //var times = getTimes();
-  var wind = new UI.Window();
-  var textEl = new UI.Text({position: new Vector2(0, 0), size: new Vector2(144, 168), textAlign: 'center', text: title});
+  var 
+      wind = new UI.Window(),
+      title = route.departure + '\n' + route.arrival,
+      textEl = new UI.Text({position: new Vector2(0, 0), size: new Vector2(144, 168), textAlign: 'center', text: title}),
   
+      // Get the next two departure times for this route
+      times = gettimes(route.departure, route.arrival),
+      currentTimes = getTimeDifference(times['1'].hours, times['1'].minutes, times['1'].seconds),
+      nextTimes = getTimeDifference(times['2'].hours, times['2'].minutes, times['2'].seconds);
+   
+  // Add the title text element to the window
   wind.add(textEl);
   
+  // Create the countdown timers
+  countdown(wind, 'currentDeparture', currentTimes.min, currentTimes.sec);
+  countdown(wind, 'nextDeparture', nextTimes.min, nextTimes.sec);
+  
+  // Show the window
   wind.show();
-  
-  countdown(wind, 'currentDeparture', 5, 30);
-  
-  countdown(wind, 'nextDeparture', 5, 30);
-}
-
-// Get the departure times from the Pont App API
-function getTimes (departure) {
-  
 }
