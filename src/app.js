@@ -160,6 +160,11 @@ function showTimes () {
     setCountdown(timeWind);
   });
   
+  // Remove the title element when this window is closed
+  timeWind.on('click', 'back', function () {
+    textEl.remove();
+    this.hide();
+  });
   
   // Show the window
   timeWind.show();
