@@ -79,6 +79,13 @@ var ndsmMenu = new UI.Menu({
   }]
 });
 
+// The window showing the time countdown for the chosen route
+var timeWind = new UI.Window({
+  //action: {
+  //  select: 'images/rotate-route.png'
+  //}
+});
+
 mainMenu.show();
 
 /**
@@ -125,23 +132,27 @@ ndsmMenu.on('select', function (e) {
  */
 function showTimes () {
   
-  var 
-      wind = new UI.Window(),
-      title = route.departure + '\n' + route.arrival,
-      textEl = new UI.Text({position: new Vector2(0, 0), size: new Vector2(144, 168), textAlign: 'center', text: title}),
+  var title = route.departure + '\n' + route.arrival,
+      textEl = new UI.Text({position: new Vector2(0, 0), size: new Vector2(144, 168), textAlign: 'center', text: title});
   
+  // Add the title text element to the window
+  timeWind.add(textEl);
+  
+  // Set the countdown
+  setCountdown(timeWind);
+  
+  // Show the window
+  timeWind.show();
+}
+
+function setCountdown (wind) {
+  var 
       // Get the next two departure times for this route
       times = gettimes(route.departure, route.arrival),
       currentTimes = getTimeDifference(times['1'].hours, times['1'].minutes, times['1'].seconds),
       nextTimes = getTimeDifference(times['2'].hours, times['2'].minutes, times['2'].seconds);
    
-  // Add the title text element to the window
-  wind.add(textEl);
-  
   // Create the countdown timers
-  countdown(wind, 'currentDeparture', currentTimes.min, currentTimes.sec);
-  countdown(wind, 'nextDeparture', nextTimes.min, nextTimes.sec);
-  
-  // Show the window
-  wind.show();
+  countdown(wind, 'currentDeparture', currentTimes.min, currentTimes.sec, setCountdown);
+  countdown(wind, 'nextDeparture', nextTimes.min, nextTimes.sec, setCountdown);
 }

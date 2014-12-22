@@ -28,6 +28,11 @@
                 "file": "fonts/UbuntuMono-Regular.ttf",
                 "name": "MONO_FONT_14",
                 "type": "font"
+            },
+            {
+                "file": "images/rotate-route.png",
+                "name": "IMAGES_ROTATE_ROUTE_PNG",
+                "type": "png"
             }
         ]
     },
