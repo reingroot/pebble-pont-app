@@ -1,6 +1,7 @@
 var UI = require('ui');
 var Vector2 = require('vector2');
-var countdownCache = [];
+var countdownElementCache = [];
+var countdownTimerCache = [];
 
 function countdown(wind, mode, minutes, seconds, zeroTimeCallback)
 {
@@ -19,12 +20,17 @@ function countdown(wind, mode, minutes, seconds, zeroTimeCallback)
       break;
   }
   
+  // If the countdown timers are already initialized, reset them
+  if (countdownElementCache.length === 2) {
+    resetCountdown();
+  }
+  
   // Create the countdown element and add it to the window
   el = new UI.Text({position: new Vector2(0, countdownConfig.position), size: new Vector2(144, 168), font: countdownConfig.font, textAlign: 'center'});
   wind.add(el);
   
   // Cache the element so we can delete it easily when the countdown is done
-  countdownCache.push(el);
+  countdownElementCache.push(el);
   
   // Padd single digits with a zero
   function twoDigits( n )
@@ -32,16 +38,27 @@ function countdown(wind, mode, minutes, seconds, zeroTimeCallback)
     return (n <= 9 ? "0" + n : n);
   }
 
+  function resetCountdown () {
+    
+    // Remove all countdown elements from the current window
+    for (var i = 0; i < countdownElementCache.length; i++) {
+      countdownElementCache[i].remove();
+      countdownElementCache[i] = undefined;
+    }
+    
+    for (var key in countdownTimerCache) {
+      clearTimeout(countdownTimerCache[key]);
+    }
+    
+    countdownTimerCache = [];
+    countdownElementCache = [];
+  }
+  
   function updateTimer()
   {
     msLeft = endTime - (+new Date());
     if ( msLeft < 1000 ) {
-      // Remove all countdown elements from the current window
-      for (var i = 0; i < countdownCache.length; i++) {
-        countdownCache[i].remove();
-        countdownCache[i] = undefined;
-      }
-      countdownCache = [];
+      resetCountdown();
       
       // Call this function when the timer runs out
       zeroTimeCallback(wind);
@@ -53,7 +70,7 @@ function countdown(wind, mode, minutes, seconds, zeroTimeCallback)
       
       el.text(currentCount);
       
-      setTimeout( updateTimer, time.getUTCMilliseconds() + 500 );
+      countdownTimerCache[mode] = setTimeout( updateTimer, time.getUTCMilliseconds() + 500 );
     }
   }
 

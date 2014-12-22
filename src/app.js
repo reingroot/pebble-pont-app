@@ -81,9 +81,9 @@ var ndsmMenu = new UI.Menu({
 
 // The window showing the time countdown for the chosen route
 var timeWind = new UI.Window({
-  //action: {
-  //  select: 'images/rotate-route.png'
-  //}
+  action: {
+    select: 'images/rotate-route.png'
+  }
 });
 
 mainMenu.show();
@@ -138,8 +138,28 @@ function showTimes () {
   // Add the title text element to the window
   timeWind.add(textEl);
   
-  // Set the countdown
+  // Add the countdown timers to the window
   setCountdown(timeWind);
+  
+  // Countdown window route rotate handler
+  timeWind.on('click', 'select', function (e) {
+    var currentArrival, currentDeparture;
+    
+    // Store the current ferry stops
+    currentDeparture = route.departure;
+    currentArrival = route.arrival;
+    
+    // Rotate the direction of this route
+    route.departure = currentArrival;
+    route.arrival = currentDeparture;
+    
+    // Update the route title
+    textEl.text(route.departure + '\n' + route.arrival);
+    
+    // Reset the countdown
+    setCountdown(timeWind);
+  });
+  
   
   // Show the window
   timeWind.show();
