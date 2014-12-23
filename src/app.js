@@ -137,20 +137,21 @@ ndsmMenu.on('select', function (e) {
  */
 function showTimes () {
   
-  var title = route.departure + '\n' + route.arrival,
-      textEl = new UI.Text({position: new Vector2(0, 0), size: new Vector2(144, 168), textAlign: 'center', text: title});
-  
-  // Add the title text element to the window
-  timeWind.add(textEl);
-  
-  // Only set the event handlers once
+  var title = route.departure + '\n' + route.arrival;
+  var titleEl = titleEl || new UI.Text({position: new Vector2(0, 0), size: new Vector2(144, 168), textAlign: 'center', text: title});
+    
+  var currentCountdown = new UI.Text({position: new Vector2(0, 60), size: new Vector2(144, 168), font: 'bitham-30-black', textAlign: 'center'});
+  var nextCountdown = new UI.Text({position: new Vector2(0, 100), size: new Vector2(144, 168), font: 'gothic-24-bold', textAlign: 'center'});
+
+  // Add the countdown timers to the text elements
+  timeWind.timers = timeWind.timers || createCountdownTimers(timeWind, currentCountdown, nextCountdown);
+
+  // Set the handlers only once
   if (! timeWind.init) {
     
-    var currentCountdown = new UI.Text({position: new Vector2(0, 60), size: new Vector2(144, 168), font: 'bitham-30-black', textAlign: 'center'});
-    var nextCountdown = new UI.Text({position: new Vector2(0, 100), size: new Vector2(144, 168), font: 'gothic-24-bold', textAlign: 'center'});
-    
-    // Add the countdown timers to the text elements
-    timers = addCountdown(timeWind, currentCountdown, nextCountdown);
+    // Add the title text element to the window
+    timeWind.add(titleEl);
+    timeWind.titleEl = titleEl;
     
     // Add the countdown text elements to the window
     timeWind.add(currentCountdown);
@@ -158,52 +159,81 @@ function showTimes () {
     
     // Countdown window route rotate handler
     timeWind.on('click', 'select', function (e) {
-      var currentArrival, currentDeparture;
-      
+      var currentArrival, currentDeparture, times, currentTimes, nextTimes;
+  
       // Store the current ferry stops
       currentDeparture = route.departure;
       currentArrival = route.arrival;
-      
+  
       // Rotate the direction of this route
       route.departure = currentArrival;
       route.arrival = currentDeparture;
-      
+  
       // Update the route title
-      textEl.text(route.departure + '\n' + route.arrival);
+      this.titleEl.text(route.departure + '\n' + route.arrival);
       
-      // Reset the countdown
-      addCountdown(this);
+      // Get the next two departure times for this route
+      times = gettimes(route.departure, route.arrival);
+      
+      currentTimes = getTimeDifference(times['1'].hours, times['1'].minutes, times['1'].seconds);
+      nextTimes = getTimeDifference(times['2'].hours, times['2'].minutes, times['2'].seconds);
+      
+      this.timers.current.resetTimer(currentTimes.min, currentTimes.sec);
+      this.timers.next.resetTimer(nextTimes.min, nextTimes.sec);
     });
-    
+  
     // Remove the title element when this window is closed
     timeWind.on('click', 'back', function () {
-      textEl.remove();
+      this.titleEl.text('');
+      this.timers.current.endTimer();
+      this.timers.next.endTimer();
+      
       this.hide();
     });
+    
+    timeWind.init = true;
+  } else {
+    
+    // Update the route title
+    timeWind.titleEl.text(route.departure + '\n' + route.arrival);
+
+    // Get the next two departure times for this route
+    var times = gettimes(route.departure, route.arrival);
+
+    var currentTimes = getTimeDifference(times['1'].hours, times['1'].minutes, times['1'].seconds);
+    var nextTimes = getTimeDifference(times['2'].hours, times['2'].minutes, times['2'].seconds);
+
+    timeWind.timers.current.resetTimer(currentTimes.min, currentTimes.sec);
+    timeWind.timers.next.resetTimer(nextTimes.min, nextTimes.sec);
   }
   
   // Show the window
   timeWind.show();
-  
-  // Intialize only once
-  timeWind.init = true;
 }
 
-function addCountdown (wind, currentCountdownEl, nextCountdownEl) {
-  var currentCountdownObj, nextCountdownObj;
+function createCountdownTimers (wind, currentCountdownEl, nextCountdownEl) {
+  var currentCountdownObj, nextCountdownObj, times, currentTimes, nextTimes;
   
   // Get the next two departure times for this route
-  var times = gettimes(route.departure, route.arrival);
+  times = gettimes(route.departure, route.arrival);
   
-  var currentTimes = getTimeDifference(times['1'].hours, times['1'].minutes, times['1'].seconds),
-      nextTimes = getTimeDifference(times['2'].hours, times['2'].minutes, times['2'].seconds);
+  currentTimes = getTimeDifference(times['1'].hours, times['1'].minutes, times['1'].seconds);
+  nextTimes = getTimeDifference(times['2'].hours, times['2'].minutes, times['2'].seconds);
    
   // Create the countdown timers
-  currentCountdownObj = new Countdown(wind, currentCountdownEl, currentTimes.min, currentTimes.sec, addCountdown);
-  nextCountdownObj = new Countdown(wind, nextCountdownEl, nextTimes.min, nextTimes.sec, addCountdown);
+  currentCountdownObj = new Countdown(wind, currentCountdownEl, currentTimes.min, currentTimes.sec, resetCountdownTimers);
+  nextCountdownObj = new Countdown(wind, nextCountdownEl, nextTimes.min, nextTimes.sec, resetCountdownTimers);
   
   return {
-    currentCountdownObj: currentCountdownObj,
-    nextCountdownObj: nextCountdownObj
+    current: currentCountdownObj,
+    next: nextCountdownObj
   };
+}
+
+function resetCountdownTimers () {
+  
+}
+
+function endCountdownTimers () {
+  
 }

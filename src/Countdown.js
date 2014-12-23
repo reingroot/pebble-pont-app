@@ -9,34 +9,47 @@ var Countdown = function (wind, textEl, minutes, seconds, callback) {
   this.textEl = textEl;
   
   this.endTime = (+new Date()) + 1000 * (60*minutes + seconds) + 500;
-  this._updateTimer(callback);
+  this._startTimer(callback);
 };
 
 /**
  * @desc stop the timer, remove the element
  */
-Countdown.prototype.remove = function () {
-  this._clearTimeout();
-  this.textEl.remove();
+Countdown.prototype.endTimer = function () {
+  clearTimeout(this.timeoutID);
+  this.textEl.text('');
+};
+
+/**
+ * @desc reset the timer with a new time
+ */
+Countdown.prototype.resetTimer = function (minutes, seconds) {
+  this.endTimer();
+  
+  this.endTime = (+new Date()) + 1000 * (60*minutes + seconds) + 500;
+  
+  this._startTimer();
 };
 
 /**
  * @desc update the timer for this countdown
  */
-Countdown.prototype._updateTimer = function (zeroTimeCallback)
+Countdown.prototype._startTimer = function (zeroTimeCallback)
 {
-  var time, msLeft, mins, currentCount,
-      that = this;
+  var that = this;
   
-  function timer () {
+  this.zeroTimeCallback = this.zeroTimeCallback || zeroTimeCallback;
+  
+  function updateTimer () {
+    var time, msLeft, mins, currentCount;
     
     msLeft = that.endTime - (+new Date());
     
     if ( msLeft < 1000 ) {
-      that.remove();
+      that.endTimer();
   
       // Call this function when the timer runs out
-      zeroTimeCallback(that.wind);
+      that.zeroTimeCallback(that.wind);
     } else {
       time = new Date( msLeft );
       mins = time.getUTCMinutes();
@@ -44,18 +57,12 @@ Countdown.prototype._updateTimer = function (zeroTimeCallback)
   
       that.textEl.text(currentCount);
   
-      that.timeoutID = setTimeout( timer, time.getUTCMilliseconds() + 500 );
+      that.timeoutID = setTimeout( updateTimer, time.getUTCMilliseconds() + 500 );
     }
   }
   
-  timer();
-};
-
-/**
- * @desc clear the running timeout for this countdown
- */
-Countdown.prototype._clearTimeout = function () {
-  clearTimeout(this.timeoutID);
+  // Run the timer
+  updateTimer();
 };
 
 /**
