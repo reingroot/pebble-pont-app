@@ -2,7 +2,7 @@ var Vector2 = require('vector2');
 var UI = require('ui');
 var gettimes = require('gettimes');
 var getTimeDifference = require('gettimedifference');
-var countdown = require('countdown');
+var Countdown = require('Countdown');
 
 // Object to store the current route
 var route = {
@@ -19,6 +19,9 @@ var singleRoutes = {
   Azartplein: 'Zamenhofstraat',
   Zamenhofstraat: 'Azartplein'
 };
+
+// Object for the timer objects
+var timers = {};
 
 /**
  * Menus
@@ -85,6 +88,8 @@ var timeWind = new UI.Window({
     select: 'images/rotate-route.png'
   }
 });
+// Make sure the window is only initialized once
+timeWind.init = false;
 
 mainMenu.show();
 
@@ -138,46 +143,67 @@ function showTimes () {
   // Add the title text element to the window
   timeWind.add(textEl);
   
-  // Add the countdown timers to the window
-  setCountdown(timeWind);
-  
-  // Countdown window route rotate handler
-  timeWind.on('click', 'select', function (e) {
-    var currentArrival, currentDeparture;
+  // Only set the event handlers once
+  if (! timeWind.init) {
     
-    // Store the current ferry stops
-    currentDeparture = route.departure;
-    currentArrival = route.arrival;
+    var currentCountdown = new UI.Text({position: new Vector2(0, 60), size: new Vector2(144, 168), font: 'bitham-30-black', textAlign: 'center'});
+    var nextCountdown = new UI.Text({position: new Vector2(0, 100), size: new Vector2(144, 168), font: 'gothic-24-bold', textAlign: 'center'});
     
-    // Rotate the direction of this route
-    route.departure = currentArrival;
-    route.arrival = currentDeparture;
+    // Add the countdown timers to the text elements
+    timers = addCountdown(timeWind, currentCountdown, nextCountdown);
     
-    // Update the route title
-    textEl.text(route.departure + '\n' + route.arrival);
+    // Add the countdown text elements to the window
+    timeWind.add(currentCountdown);
+    timeWind.add(nextCountdown);
     
-    // Reset the countdown
-    setCountdown(timeWind);
-  });
-  
-  // Remove the title element when this window is closed
-  timeWind.on('click', 'back', function () {
-    textEl.remove();
-    this.hide();
-  });
+    // Countdown window route rotate handler
+    timeWind.on('click', 'select', function (e) {
+      var currentArrival, currentDeparture;
+      
+      // Store the current ferry stops
+      currentDeparture = route.departure;
+      currentArrival = route.arrival;
+      
+      // Rotate the direction of this route
+      route.departure = currentArrival;
+      route.arrival = currentDeparture;
+      
+      // Update the route title
+      textEl.text(route.departure + '\n' + route.arrival);
+      
+      // Reset the countdown
+      addCountdown(this);
+    });
+    
+    // Remove the title element when this window is closed
+    timeWind.on('click', 'back', function () {
+      textEl.remove();
+      this.hide();
+    });
+  }
   
   // Show the window
   timeWind.show();
+  
+  // Intialize only once
+  timeWind.init = true;
 }
 
-function setCountdown (wind) {
-  var 
-      // Get the next two departure times for this route
-      times = gettimes(route.departure, route.arrival),
-      currentTimes = getTimeDifference(times['1'].hours, times['1'].minutes, times['1'].seconds),
+function addCountdown (wind, currentCountdownEl, nextCountdownEl) {
+  var currentCountdownObj, nextCountdownObj;
+  
+  // Get the next two departure times for this route
+  var times = gettimes(route.departure, route.arrival);
+  
+  var currentTimes = getTimeDifference(times['1'].hours, times['1'].minutes, times['1'].seconds),
       nextTimes = getTimeDifference(times['2'].hours, times['2'].minutes, times['2'].seconds);
    
   // Create the countdown timers
-  countdown(wind, 'currentDeparture', currentTimes.min, currentTimes.sec, setCountdown);
-  countdown(wind, 'nextDeparture', nextTimes.min, nextTimes.sec, setCountdown);
+  currentCountdownObj = new Countdown(wind, currentCountdownEl, currentTimes.min, currentTimes.sec, addCountdown);
+  nextCountdownObj = new Countdown(wind, nextCountdownEl, nextTimes.min, nextTimes.sec, addCountdown);
+  
+  return {
+    currentCountdownObj: currentCountdownObj,
+    nextCountdownObj: nextCountdownObj
+  };
 }

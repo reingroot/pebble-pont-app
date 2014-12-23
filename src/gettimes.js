@@ -3,6 +3,8 @@ var ajax = require('ajax');
 function gettimes (location, destination) {
   var response;
   
+  console.log('http://pontveer.nl/api/?l=' + encodeURI(location) + '&d=' + encodeURI(destination) + '&platform=Pebble');
+  
   ajax(
     {
       url: 'http://pontveer.nl/api/?l=' + encodeURI(location) + '&d=' + encodeURI(destination) + '&platform=Pebble',
@@ -17,6 +19,8 @@ function gettimes (location, destination) {
       response = undefined;
     }
   );
+  
+  console.log(response);
   
   return response;
 }
